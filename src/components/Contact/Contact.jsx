@@ -3,7 +3,7 @@ import { BiSolidContact } from 'react-icons/bi';
 import { deleteContact } from '../../redux/contactsOps';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectLoading } from '../../redux/contactsSlice';
-import { Box, IconButton, Typography, ListItem, ListItemAvatar, Avatar, ListItemText, ListItemSecondaryAction } from '@mui/material';
+import { Box, IconButton, Typography, ListItem, ListItemAvatar, Avatar, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const Contact = ({ id, name, number }) => {
@@ -21,16 +21,18 @@ const Contact = ({ id, name, number }) => {
   return (
     <ListItem
       secondaryAction={
-        <ListItemSecondaryAction>
-          <IconButton
-            edge="end"
-            aria-label="delete"
-            onClick={handleDeleteContact}
-            disabled={loading}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </ListItemSecondaryAction>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <ListItemSecondaryAction>
+            <IconButton
+              edge="end"
+              aria-label="delete"
+              onClick={handleDeleteContact}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={20} /> : <DeleteIcon />}
+            </IconButton>
+          </ListItemSecondaryAction>
+        </Box>
       }
     >
       <ListItemAvatar>
