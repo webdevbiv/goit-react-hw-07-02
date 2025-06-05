@@ -3,7 +3,8 @@ import { BiSolidContact } from 'react-icons/bi';
 import { deleteContact } from '../../redux/contactsOps';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectLoading } from '../../redux/contactsSlice';
-import s from './Contact.module.css';
+import { Box, IconButton, Typography, ListItem, ListItemAvatar, Avatar, ListItemText, ListItemSecondaryAction } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const Contact = ({ id, name, number }) => {
   const dispatch = useDispatch();
@@ -18,26 +19,37 @@ const Contact = ({ id, name, number }) => {
   };
 
   return (
-    <li className={s.contactItem}>
-      <div className={s.contactInfo}>
-        <div className={s.nameContainer}>
-          <BiSolidContact className={s.icon} />
-          <div>{name}</div>
-        </div>
-        <div className={s.numberContainer}>
-          <FaPhone className={s.icon} />
-          <div>{number}</div>
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={handleDeleteContact}
-        disabled={loading}
-        className={s.deleteButton}
-      >
-        {loading ? 'Deleting...' : 'Delete'}
-      </button>
-    </li>
+    <ListItem
+      secondaryAction={
+        <ListItemSecondaryAction>
+          <IconButton
+            edge="end"
+            aria-label="delete"
+            onClick={handleDeleteContact}
+            disabled={loading}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </ListItemSecondaryAction>
+      }
+    >
+      <ListItemAvatar>
+        <Avatar>
+          <BiSolidContact />
+        </Avatar>
+      </ListItemAvatar>
+      <ListItemText
+        primary={name}
+        secondary={
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <FaPhone sx={{ mr: 1 }} />
+            <Typography variant="body2" color="text.secondary">
+              {number}
+            </Typography>
+          </Box>
+        }
+      />
+    </ListItem>
   );
 };
 

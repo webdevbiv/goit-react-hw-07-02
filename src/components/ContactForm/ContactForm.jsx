@@ -1,10 +1,10 @@
 import { useId } from 'react';
 import { Field, Form, Formik, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import s from './ContactForm.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { addContact } from '../../redux/contactsOps';
 import { selectContacts, selectLoading } from '../../redux/contactsSlice';
+import { Box, TextField, Button, Alert, AlertTitle } from '@mui/material';
 
 const FeedbackSchema = Yup.object().shape({
   name: Yup.string()
@@ -38,7 +38,6 @@ const ContactForm = () => {
     );
 
     if (isDuplicate) {
-      alert(`${values.name} is already in contacts.`);
       setSubmitting(false);
       return;
     }
@@ -54,27 +53,64 @@ const ContactForm = () => {
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      onSubmit={onSubmit}
-      validationSchema={FeedbackSchema}
-    >
-      {({ isSubmitting }) => (
-        <Form className={s.contactForm}>
-          <label htmlFor={nameFieldId}>Name</label>
-          <Field id={nameFieldId} name="name" />
-          <ErrorMessage name="name" component="span" />
-
-          <label htmlFor={numberFieldId}>Number</label>
-          <Field id={numberFieldId} name="number" type="tel" />
-          <ErrorMessage name="number" component="span" />
-
-          <button type="submit" disabled={loading || isSubmitting}>
-            {loading || isSubmitting ? 'Adding...' : 'Add Contact'}
-          </button>
-        </Form>
-      )}
-    </Formik>
+    <Box sx={{ mb: 4 }}>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={FeedbackSchema}
+        onSubmit={onSubmit}
+      >
+        {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
+          <form onSubmit={handleSubmit}>
+            <TextField
+              fullWidth
+              margin="normal"
+              id={nameFieldId}
+              name="name"
+              label="Name"
+              variant="outlined"
+              placeholder="Enter name"
+              value={values.name}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.name && Boolean(errors.name)}
+              helperText={touched.name && errors.name}
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              id={numberFieldId}
+              name="number"
+              label="Phone Number"
+              variant="outlined"
+              placeholder="Enter phone number"
+              value={values.number}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.number && Boolean(errors.number)}
+              helperText={touched.number && errors.number}
+            />
+            {contacts.some(contact =>
+              contact.name.toLowerCase() === values.name.toLowerCase() &&
+              contact.number === values.number
+            ) && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                <AlertTitle>Contact Exists</AlertTitle>
+                This contact already exists in your phonebook.
+              </Alert>
+            )}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isSubmitting || loading}
+              fullWidth
+            >
+              Add contact
+            </Button>
+          </form>
+        )}
+      </Formik>
+    </Box>
   );
 };
 
