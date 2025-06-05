@@ -1,10 +1,10 @@
 import { useId } from 'react';
 import { Field, Form, Formik, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import s from './ContactForm.module.scss';
+import s from './ContactForm.module.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { addContact } from '../../redux/contactsSlice';
-import { selectContacts } from '../../redux/selectors';
+import { addContact } from '../../redux/contactsOps';
+import { selectContacts, selectLoading } from '../../redux/contactsSlice';
 
 const FeedbackSchema = Yup.object().shape({
   name: Yup.string()
@@ -22,18 +22,15 @@ const initialValues = {
   name: '',
   number: '',
 };
+
 const ContactForm = () => {
   const contacts = useSelector(selectContacts);
+  const loading = useSelector(selectLoading);
   const dispatch = useDispatch();
   const nameFieldId = useId();
   const numberFieldId = useId();
 
-  const onSubmit = (values, { resetForm }) => {
-    const newContact = {
-      ...values,
-      id: Date.now().toString(),
-    };
-
+  const onSubmit = async (values, { resetForm, setSubmitting }) => {
     const isDuplicate = contacts.some(
       contact =>
         contact.name.toLowerCase() === values.name.toLowerCase() &&
@@ -42,11 +39,18 @@ const ContactForm = () => {
 
     if (isDuplicate) {
       alert(`${values.name} is already in contacts.`);
+      setSubmitting(false);
       return;
     }
 
-    dispatch(addContact(newContact));
-    resetForm();
+    try {
+      await dispatch(addContact(values)).unwrap();
+      resetForm();
+    } catch (error) {
+      alert('Failed to add contact. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -55,17 +59,21 @@ const ContactForm = () => {
       onSubmit={onSubmit}
       validationSchema={FeedbackSchema}
     >
-      <Form className={s.contactForm}>
-        <label htmlFor={nameFieldId}>Name</label>
-        <Field id={nameFieldId} name="name" />
-        <ErrorMessage name="name" component="span" />
+      {({ isSubmitting }) => (
+        <Form className={s.contactForm}>
+          <label htmlFor={nameFieldId}>Name</label>
+          <Field id={nameFieldId} name="name" />
+          <ErrorMessage name="name" component="span" />
 
-        <label htmlFor={numberFieldId}>Number</label>
-        <Field id={numberFieldId} name="number" type="tel" />
-        <ErrorMessage name="number" component="span" />
+          <label htmlFor={numberFieldId}>Number</label>
+          <Field id={numberFieldId} name="number" type="tel" />
+          <ErrorMessage name="number" component="span" />
 
-        <button type="submit">Add Contact</button>
-      </Form>
+          <button type="submit" disabled={loading || isSubmitting}>
+            {loading || isSubmitting ? 'Adding...' : 'Add Contact'}
+          </button>
+        </Form>
+      )}
     </Formik>
   );
 };
